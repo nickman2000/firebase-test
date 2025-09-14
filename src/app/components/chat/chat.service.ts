@@ -23,11 +23,12 @@ export class ChatService {
   
   private presenceInterval: any = null;
   private currentUserId: string | null = null;
+  private messageListener: any = null;
+  private onlineUsersListener: any = null;
+  private isInitialized: boolean = false;
 
   constructor() {
     this.initializeRefs();
-    this.listenToMessages();
-    this.listenToOnlineUsers();
     this.setupUserPresence();
   }
 
@@ -60,7 +61,11 @@ export class ChatService {
   }
 
   private listenToMessages(): void {
-    onValue(this.messagesRef, (snapshot) => {
+    if (this.messageListener) {
+      off(this.messagesRef, 'value', this.messageListener);
+    }
+    
+    this.messageListener = onValue(this.messagesRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
         const messages: ChatMessage[] = Object.keys(data).map(key => ({
@@ -76,7 +81,11 @@ export class ChatService {
   }
 
   private listenToOnlineUsers(): void {
-    onValue(this.onlineUsersRef, (snapshot) => {
+    if (this.onlineUsersListener) {
+      off(this.onlineUsersRef, 'value', this.onlineUsersListener);
+    }
+    
+    this.onlineUsersListener = onValue(this.onlineUsersRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
         const users: ChatUser[] = Object.keys(data).map(key => ({
@@ -96,14 +105,38 @@ export class ChatService {
         if (this.currentUserId !== user.uid) {
           this.setUserOnline(user);
         }
+        if (!this.isInitialized) {
+          this.initializeChatListeners();
+          this.isInitialized = true;
+        }
       } else {
         this.cleanupUserPresence();
+        this.cleanupListeners();
+        this.isInitialized = false;
         if (this.currentUserId) {
           const userPresenceRef = ref(this.db, `onlineUsers/${this.currentUserId}`);
           set(userPresenceRef, null);
         }
       }
     });
+  }
+
+  private initializeChatListeners(): void {
+    this.listenToMessages();
+    this.listenToOnlineUsers();
+  }
+
+  private cleanupListeners(): void {
+    if (this.messageListener) {
+      off(this.messagesRef, 'value', this.messageListener);
+      this.messageListener = null;
+    }
+    if (this.onlineUsersListener) {
+      off(this.onlineUsersRef, 'value', this.onlineUsersListener);
+      this.onlineUsersListener = null;
+    }
+    this.messagesSubject.next([]);
+    this.onlineUsersSubject.next([]);
   }
 
   private setUserOnline(user: any): void {
@@ -150,6 +183,10 @@ export class ChatService {
     if (user && this.currentUserId !== user.uid) {
       this.setUserOnline(user);
     }
+    if (user && !this.isInitialized) {
+      this.initializeChatListeners();
+      this.isInitialized = true;
+    }
   }
 
   private getUserDisplayName(user: User): string {
@@ -172,8 +209,7 @@ export class ChatService {
   }
 
   ngOnDestroy(): void {
-    off(this.messagesRef);
-    off(this.onlineUsersRef);
+    this.cleanupListeners();
     this.cleanupUserPresence();
   }
 }
