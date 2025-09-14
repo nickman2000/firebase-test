@@ -4,7 +4,10 @@
         @if (authService.currentUser()) {
             <span>Hello, {{ authService.currentUser()?.email }}</span>
         }
-        <button (click)="logout()" class="logout-btn">Logout</button>
+        <div class="nav-buttons">
+            <button routerLink="/profile" class="profile-btn">👤 პროფილი</button>
+            <button (click)="logout()" class="logout-btn">Logout</button>
+        </div>
     </div>
 </div>
 <app-chat></app-chat>

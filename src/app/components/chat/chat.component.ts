@@ -30,7 +30,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.messages$ = this.chatService.messages$;
     this.onlineUsers$ = this.chatService.onlineUsers$;
     
-    // Use effect to react to auth state changes
     effect(() => {
       const user = this.authService.currentUser();
       this.currentUser = user;
@@ -38,18 +37,15 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.error = 'You must be logged in to use the chat';
       } else {
         this.error = '';
-        // Reinitialize chat when user changes
         this.chatService.refreshForCurrentUser();
       }
     });
   }
 
   ngOnInit(): void {
-    // Initialization is now handled in constructor with effect
   }
 
   ngOnDestroy(): void {
-    // Cleanup is handled by the service
   }
 
   ngAfterViewChecked(): void {
@@ -61,13 +57,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       return;
     }
 
-    // Check if we have a current user
     if (!this.currentUser) {
       this.error = 'You must be logged in to send messages';
       return;
     }
     
-    // Store the message to send and clear input immediately
     const messageToSend = this.newMessage.trim();
     this.newMessage = '';
     this.isLoading = true;
@@ -77,7 +71,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       await this.chatService.sendMessage(messageToSend);
     } catch (error) {
       this.error = 'Failed to send message. Please try again.';
-      // Restore the message if sending failed
       this.newMessage = messageToSend;
     } finally {
       this.isLoading = false;
@@ -97,7 +90,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.messagesContainer.nativeElement.scrollTop = 
           this.messagesContainer.nativeElement.scrollHeight;
       } catch (err) {
-        // Silently handle scroll errors
       }
     }
   }

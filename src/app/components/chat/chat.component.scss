@@ -271,7 +271,6 @@
   }
 }
 
-// Responsive design
 @media (max-width: 768px) {
   .chat-container {
     height: 100vh;
@@ -296,7 +295,6 @@
   }
 }
 
-// Animations
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -317,7 +315,6 @@
   }
 }
 
-// Custom scrollbar
 .messages-container::-webkit-scrollbar,
 .online-users-sidebar::-webkit-scrollbar {
   width: 6px;

@@ -1,0 +1,75 @@
+<div class="profile-container">
+  <div class="profile-header">
+    <h1>პროფილი</h1>
+    <button class="refresh-btn" (click)="refreshProfile()" [disabled]="isLoading()">
+      <span [class.spinning]="isLoading()">🔄</span>
+      განახლება
+    </button>
+  </div>
+
+  <div *ngIf="isLoading()" class="loading-container">
+    <div class="spinner"></div>
+    <p>იტვირთება...</p>
+  </div>
+
+  <div *ngIf="error() && !isLoading()" class="error-container">
+    <div class="error-icon">⚠️</div>
+    <p class="error-message">{{ error() }}</p>
+    <button class="retry-btn" (click)="refreshProfile()">თავიდან სცადე</button>
+  </div>
+
+  <div *ngIf="userData() && !isLoading() && !error()" class="profile-content">
+    <div class="profile-card">
+      <div class="avatar-section">
+        <div class="avatar">
+          {{ userData().firstName?.charAt(0)?.toUpperCase() }}{{ userData().lastName?.charAt(0)?.toUpperCase() }}
+        </div>
+        <h2 class="full-name">{{ userData().firstName }} {{ userData().lastName }}</h2>
+        <p class="username">@{{ userData().username }}</p>
+      </div>
+
+      <div class="info-section">
+        <div class="info-item">
+          <label>სახელი:</label>
+          <span>{{ userData().firstName }}</span>
+        </div>
+
+        <div class="info-item">
+          <label>გვარი:</label>
+          <span>{{ userData().lastName }}</span>
+        </div>
+
+        <div class="info-item">
+          <label>მომხმარებლის სახელი:</label>
+          <span>{{ userData().username }}</span>
+        </div>
+
+        <div class="info-item">
+          <label>იუზერნეიმი</label>
+          <span>{{ userData().email }}</span>
+        </div>
+
+        <div class="info-item">
+          <label>მომხმარებლის ID:</label>
+          <span class="user-id">{{ userData().uid }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button class="primary-btn" (click)="goToMainPage()">
+        🏠 მთავარ გვერდზე დაბრუნება
+      </button>
+      <button class="secondary-btn" (click)="logout()">
+        🚪 გამოსვლა
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="!userData() && !isLoading() && !error()" class="no-data-container">
+    <div class="no-data-icon">👤</div>
+    <h2>ინფორმაცია ვერ მოიძებნა</h2>
+    <p>მომხმარებლის ინფორმაცია ვერ იქნა ნაპოვნი ბაზაში</p>
+    <button class="retry-btn" (click)="refreshProfile()">თავიდან სცადე</button>
+  </div>
+</div>

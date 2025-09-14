@@ -36,7 +36,6 @@ export class LoginComponent {
 
     try {
       await this.authService.login(nickname, password);
-      // Navigation is handled by the auth service
     } catch (err: any) {
       this.errorMessage = err.message;
     } finally {

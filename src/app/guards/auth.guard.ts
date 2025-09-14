@@ -6,7 +6,6 @@ export const authGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  // If auth is still loading, wait for it to complete
   if (authService.isLoading()) {
     return new Promise((resolve) => {
       const checkAuth = () => {
@@ -25,7 +24,6 @@ export const authGuard: CanActivateFn = (route, state) => {
     });
   }
 
-  // If not authenticated, redirect to login
   if (!authService.isAuthenticated()) {
     router.navigate(['/login']);
     return false;
@@ -38,7 +36,6 @@ export const guestGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  // If auth is still loading, wait for it to complete
   if (authService.isLoading()) {
     return new Promise((resolve) => {
       const checkAuth = () => {
@@ -57,7 +54,6 @@ export const guestGuard: CanActivateFn = (route, state) => {
     });
   }
 
-  // If authenticated, redirect to main page
   if (authService.isAuthenticated()) {
     router.navigate(['/main-page']);
     return false;

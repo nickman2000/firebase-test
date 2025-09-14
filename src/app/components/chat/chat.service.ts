@@ -20,6 +20,9 @@ export class ChatService {
   private messagesRef: any;
   private usersRef: any;
   private onlineUsersRef: any;
+  
+  private presenceInterval: any = null;
+  private currentUserId: string | null = null;
 
   constructor() {
     this.initializeRefs();
@@ -34,7 +37,6 @@ export class ChatService {
     this.onlineUsersRef = ref(this.db, 'onlineUsers');
   }
 
-  // Send a message to the chat
   async sendMessage(text: string): Promise<void> {
     const user = this.auth.currentUser;
     
@@ -57,7 +59,6 @@ export class ChatService {
     }
   }
 
-  // Listen to real-time messages
   private listenToMessages(): void {
     onValue(this.messagesRef, (snapshot) => {
       const data = snapshot.val();
@@ -74,7 +75,6 @@ export class ChatService {
     });
   }
 
-  // Listen to online users
   private listenToOnlineUsers(): void {
     onValue(this.onlineUsersRef, (snapshot) => {
       const data = snapshot.val();
@@ -90,17 +90,26 @@ export class ChatService {
     });
   }
 
-  // Setup user presence (online/offline status)
   private setupUserPresence(): void {
     this.auth.onAuthStateChanged((user) => {
       if (user) {
-        this.setUserOnline(user);
+        if (this.currentUserId !== user.uid) {
+          this.setUserOnline(user);
+        }
+      } else {
+        this.cleanupUserPresence();
+        if (this.currentUserId) {
+          const userPresenceRef = ref(this.db, `onlineUsers/${this.currentUserId}`);
+          set(userPresenceRef, null);
+        }
       }
     });
   }
 
-  // Set user as online and handle presence
   private setUserOnline(user: any): void {
+    this.cleanupUserPresence();
+    
+    this.currentUserId = user.uid;
     const userPresenceRef = ref(this.db, `onlineUsers/${user.uid}`);
     const userInfo: ChatUser = {
       uid: user.uid,
@@ -109,29 +118,40 @@ export class ChatService {
       lastSeen: Date.now()
     };
 
-    // Set user as online
     set(userPresenceRef, userInfo);
 
-    // Remove user when they disconnect
     onDisconnect(userPresenceRef).remove();
 
-    // Update last seen timestamp periodically
-    setInterval(() => {
-      if (this.auth.currentUser) {
+    this.presenceInterval = setInterval(() => {
+      if (this.auth.currentUser && this.auth.currentUser.uid === user.uid) {
         set(ref(this.db, `onlineUsers/${user.uid}/lastSeen`), Date.now());
       }
-    }, 60000); // Update every minute
+    }, 60000);
   }
 
-  // Refresh for current user (called when authentication state changes)
+  private cleanupUserPresence(): void {
+    if (this.presenceInterval) {
+      clearInterval(this.presenceInterval);
+      this.presenceInterval = null;
+    }
+    this.currentUserId = null;
+  }
+
+  setUserOffline(): void {
+    if (this.currentUserId) {
+      const userPresenceRef = ref(this.db, `onlineUsers/${this.currentUserId}`);
+      set(userPresenceRef, null);
+      this.cleanupUserPresence();
+    }
+  }
+
   refreshForCurrentUser(): void {
     const user = this.auth.currentUser;
-    if (user) {
+    if (user && this.currentUserId !== user.uid) {
       this.setUserOnline(user);
     }
   }
 
-  // Get user display name from email (removing @example.com part)
   private getUserDisplayName(user: User): string {
     if (user.email) {
       return user.email.split('@')[0];
@@ -139,12 +159,10 @@ export class ChatService {
     return user.uid.substring(0, 8);
   }
 
-  // Get current user info
   getCurrentUser(): User | null {
     return this.auth.currentUser;
   }
 
-  // Clear chat (admin function)
   async clearChat(): Promise<void> {
     try {
       await set(this.messagesRef, null);
@@ -153,9 +171,9 @@ export class ChatService {
     }
   }
 
-  // Cleanup listeners when service is destroyed
   ngOnDestroy(): void {
     off(this.messagesRef);
     off(this.onlineUsersRef);
+    this.cleanupUserPresence();
   }
 }

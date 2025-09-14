@@ -1,13 +1,14 @@
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { ChatComponent } from '../chat/chat.component';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
 	selector: 'app-home',
 	standalone: true,
-	imports: [FormsModule, CommonModule, ChatComponent],
+	imports: [FormsModule, CommonModule, RouterModule, ChatComponent],
 	templateUrl: './home.component.html',
 	styleUrls: ['./home.component.scss']
 })

@@ -11,27 +11,22 @@ export class AuthService {
   private router = inject(Router);
   private firestore = inject(Firestore);
 
-  // Signal to track current user and auth state
   public currentUser = signal<User | null>(null);
   public isAuthenticated = signal<boolean>(false);
   public isLoading = signal<boolean>(true);
 
   constructor() {
-    // Listen to auth state changes
     onAuthStateChanged(this.auth, (user) => {
       this.currentUser.set(user);
       this.isAuthenticated.set(!!user);
       this.isLoading.set(false);
       
-      // Redirect based on auth state
       if (user) {
-        // User is signed in, redirect to main page if on login/register
         const currentUrl = this.router.url;
         if (currentUrl === '/login' || currentUrl === '/register' || currentUrl === '/') {
           this.router.navigate(['/main-page']);
         }
       } else {
-        // User is signed out, redirect to login if on protected pages
         const currentUrl = this.router.url;
         if (currentUrl === '/main-page') {
           this.router.navigate(['/login']);
@@ -44,7 +39,6 @@ export class AuthService {
     try {
       const email = `${nickname}@example.com`;
       await signInWithEmailAndPassword(this.auth, email, password);
-      // Navigation will be handled by onAuthStateChanged
     } catch (error) {
       throw error;
     }
@@ -55,7 +49,6 @@ export class AuthService {
       const email = `${username}@example.com`;
       const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
       
-      // Add user to Firestore
       const usersCollection = collection(this.firestore, 'users');
       await addDoc(usersCollection, {
         uid: userCredential.user.uid,
@@ -64,7 +57,6 @@ export class AuthService {
         username,
         email
       });
-      // Navigation will be handled by onAuthStateChanged
     } catch (error) {
       throw error;
     }
@@ -73,7 +65,6 @@ export class AuthService {
   async logout(): Promise<void> {
     try {
       await signOut(this.auth);
-      // Navigation will be handled by onAuthStateChanged
     } catch (error) {
       throw error;
     }

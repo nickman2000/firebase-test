@@ -38,7 +38,6 @@ export class RegisterComponent {
 
 		try {
 			await this.authService.register(firstName, lastName, username, password);
-			// Navigation is handled by the auth service
 		} catch (err: any) {
 			this.errorMessage = err.message;
 		} finally {
