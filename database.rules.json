@@ -1,0 +1,23 @@
+{
+  "rules": {
+    "messages": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      "$messageId": {
+        ".validate": "newData.hasChildren(['text', 'senderId', 'senderName', 'timestamp', 'type']) && newData.child('senderId').val() == auth.uid"
+      }
+    },
+    "users": {
+      ".read": "auth != null",
+      "$userId": {
+        ".write": "$userId == auth.uid"
+      }
+    },
+    "onlineUsers": {
+      ".read": "auth != null",
+      "$userId": {
+        ".write": "$userId == auth.uid"
+      }
+    }
+  }
+}

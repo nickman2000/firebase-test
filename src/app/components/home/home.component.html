@@ -1,0 +1,10 @@
+<div class="home-header">
+    <h1>Welcome!</h1>
+    <div class="user-info">
+        @if (authService.currentUser()) {
+            <span>Hello, {{ authService.currentUser()?.email }}</span>
+        }
+        <button (click)="logout()" class="logout-btn">Logout</button>
+    </div>
+</div>
+<app-chat></app-chat>

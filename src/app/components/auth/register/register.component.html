@@ -1,0 +1,22 @@
+<div class="login-container">
+	<h2>რეგისტრაცია</h2>
+	<form [formGroup]="registerForm" (ngSubmit)="register()">
+		<div class="form-group">
+			<label for="firstName">სახელი</label>
+			<input id="firstName" formControlName="firstName" placeholder="შეიყვანეთ სახელი" />
+		</div>
+		<div class="form-group">
+			<label for="lastName">გვარი</label>
+			<input id="lastName" formControlName="lastName" placeholder="შეიყვანეთ გვარი" />
+		</div>
+		<div class="form-group">
+			<label for="username">User</label>
+			<input id="username" formControlName="username" placeholder="შეიყვანეთ User" />
+		</div>
+		<div class="form-group">
+			<label for="password">პაროლი</label>
+			<input id="password" type="password" formControlName="password" placeholder="შეიყვანეთ პაროლი" />
+		</div>
+		<button type="submit" [disabled]="registerForm.invalid">რეგისტრაცია</button>
+	</form>
+</div>

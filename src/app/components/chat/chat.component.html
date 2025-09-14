@@ -1,0 +1,85 @@
+<div class="chat-container">
+  <!-- Header -->
+  <div class="chat-header">
+    <h2>Real-time Chat</h2>
+    <div class="online-count">
+      <span class="status-indicator"></span>
+      <span>{{ (onlineUsers$ | async)?.length || 0 }} online</span>
+    </div>
+  </div>
+
+  <!-- Error message -->
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+  </div>
+
+  <!-- Main chat area -->
+  <div class="chat-main">
+    <!-- Messages container -->
+    <div class="messages-container" #messagesContainer>
+      <div *ngIf="(messages$ | async)?.length === 0" class="no-messages">
+        No messages yet. Start the conversation!
+      </div>
+      
+      <div *ngFor="let message of messages$ | async; trackBy: trackByMessageId" 
+           class="message" 
+           [class.own-message]="isOwnMessage(message)"
+           [class.system-message]="message.type === 'system'">
+        
+        <div class="message-content">
+          <div class="message-header" *ngIf="!isOwnMessage(message)">
+            <span class="sender-name">{{ message.senderName }}</span>
+            <span class="message-time">{{ formatTime(message.timestamp) }}</span>
+          </div>
+          
+          <div class="message-text">{{ message.text }}</div>
+          
+          <div class="message-time-own" *ngIf="isOwnMessage(message)">
+            {{ formatTime(message.timestamp) }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Online users sidebar -->
+    <div class="online-users-sidebar">
+      <h3>Online Users</h3>
+      <div class="users-list">
+        <div *ngFor="let user of onlineUsers$ | async" class="user-item">
+          <div class="user-avatar">{{ user.displayName.charAt(0).toUpperCase() }}</div>
+          <span class="user-name">{{ user.displayName }}</span>
+          <span class="online-status" *ngIf="user.isOnline"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message input -->
+  <div class="message-input-container">
+    <div class="input-group">
+      <input 
+        type="text" 
+        [(ngModel)]="newMessage" 
+        (keypress)="onKeyPress($event)"
+        placeholder="Type your message..." 
+        class="message-input"
+        maxlength="500">
+      
+      <button 
+        (click)="sendMessage()" 
+        class="send-button"
+        [disabled]="!newMessage.trim() || isLoading"
+        type="button">
+        <span>Send</span>
+      </button>
+    </div>
+    
+    <!-- Optional: Clear chat button for admins -->
+    <button 
+      (click)="clearChat()" 
+      class="clear-button"
+      title="Clear all messages">
+      Clear Chat
+    </button>
+  </div>
+</div>
